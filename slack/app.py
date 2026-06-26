@@ -9,6 +9,18 @@ from slack.routine import fire_coding_routine
 
 logger = logging.getLogger(__name__)
 
+
+def _cw_encode(s: str) -> str:
+    return s.replace("$", "$2524").replace("/", "$252F").replace("[", "$255B").replace("]", "$255D")
+
+
+def _cloudwatch_url() -> str:
+    region = os.environ.get("AWS_REGION", "us-east-1")
+    log_group = _cw_encode(os.environ.get("AWS_LAMBDA_LOG_GROUP_NAME", ""))
+    log_stream = _cw_encode(os.environ.get("AWS_LAMBDA_LOG_STREAM_NAME", ""))
+    base = f"https://{region}.console.aws.amazon.com/cloudwatch/home?region={region}"
+    return f"{base}#logsV2:log-groups/log-group/{log_group}/log-events/{log_stream}"
+
 _HERE = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(_HERE, "..", "apps.yaml")) as f:
     _REGISTRY = yaml.safe_load(f)["apps"]
@@ -38,15 +50,23 @@ def handle_mention(event, say):
     app_name, app_config = _CHANNEL_TO_APP[channel]
     repos = app_config["repos"]
 
-    say(text=f"On it! Starting work on *{app_name}*...", thread_ts=thread_ts)
+    friendly_name = app_config.get("friendly_name", app_name)
+    say(text=f"On it! Starting work on *{friendly_name}*", thread_ts=thread_ts)
 
-    fire_coding_routine(
-        feature_request=text,
-        app_name=app_name,
-        repos=repos,
-        slack_channel=channel,
-        slack_thread_ts=thread_ts,
-    )
+    try:
+        fire_coding_routine(
+            feature_request=text,
+            app_name=app_name,
+            repos=repos,
+            slack_channel=channel,
+            slack_thread_ts=thread_ts,
+        )
+    except Exception:
+        logger.exception("Failed to fire coding routine")
+        say(
+            text=f"Something went wrong starting the routine. <{_cloudwatch_url()}|View logs>",
+            thread_ts=thread_ts,
+        )
 
 
 slack_handler = SlackRequestHandler(app=app)

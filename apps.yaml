@@ -1,6 +1,7 @@
 apps:
   haunted-cove-photography:
     slack_channel: C0BDFBB3ZHQ
+    friendly_name: Haunted Cove Photography 📸
     repos:
       - name: Silver-Shamrock-Labs/haunted-cove-photography-backend
         role: backend
