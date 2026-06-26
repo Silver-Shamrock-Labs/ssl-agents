@@ -1,0 +1,11 @@
+apps:
+  # Example application — replace with real apps and channel IDs
+  my-app:
+    slack_channel: C1234567890   # Slack channel ID for this app
+    repos:
+      - name: silver-shamrock-labs/my-app-api
+        role: backend
+        deploy_order: 1
+      - name: silver-shamrock-labs/my-app-web
+        role: frontend
+        deploy_order: 2
