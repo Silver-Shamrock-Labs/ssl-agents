@@ -5,7 +5,7 @@ AI-driven coding workflows for the [Silver Shamrock Labs](https://github.com/sil
 ## How it works
 
 ```
-You: @ssl-agents add a dark mode toggle to my-app
+You: @Gourdo add a dark mode toggle to my-app
 
 Bot: On it! Starting work on my-app...
 
@@ -116,7 +116,7 @@ Terraform outputs the `slack_events_url`. Paste it into your Slack app under **E
 
 ### 5. Invite the bot
 
-Invite `@ssl-agents` (or whatever you named your Slack app) to each per-application channel listed in `apps.yaml`.
+Invite `@Gourdo` to each per-application channel listed in `apps.yaml`.
 
 ## Adding a new application
 

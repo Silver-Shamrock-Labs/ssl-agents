@@ -1,11 +1,10 @@
 apps:
-  # Example application — replace with real apps and channel IDs
-  my-app:
-    slack_channel: C1234567890   # Slack channel ID for this app
+  haunted-cove-photography:
+    slack_channel: C0BDFBB3ZHQ
     repos:
-      - name: silver-shamrock-labs/my-app-api
+      - name: Silver-Shamrock-Labs/haunted-cove-photography-backend
         role: backend
         deploy_order: 1
-      - name: silver-shamrock-labs/my-app-web
+      - name: Silver-Shamrock-Labs/haunted-cove-photography
         role: frontend
         deploy_order: 2
