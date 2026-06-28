@@ -2,7 +2,7 @@ import logging
 import os
 
 import yaml
-from slack_bolt import App
+from slack_bolt import App, BoltResponse
 from slack_bolt.adapter.aws_lambda import SlackRequestHandler
 
 from slack.routine import fire_coding_routine
@@ -37,8 +37,15 @@ app = App(
 )
 
 
+@app.middleware
+def ignore_retries(req, next):
+    if req.headers.get("x-slack-retry-num"):
+        return BoltResponse(status=200, body="")
+    return next()
+
+
 @app.event("app_mention")
-def handle_mention(event, say):
+def handle_mention(event, say, client):
     channel = event["channel"]
     thread_ts = event.get("thread_ts", event["ts"])
     text = event["text"]
@@ -50,6 +57,11 @@ def handle_mention(event, say):
     app_name, app_config = _CHANNEL_TO_APP[channel]
     repos = app_config["repos"]
 
+    thread_history = None
+    if event.get("thread_ts") and event["thread_ts"] != event["ts"]:
+        result = client.conversations_replies(channel=channel, ts=event["thread_ts"])
+        thread_history = result.get("messages", [])
+
     friendly_name = app_config.get("friendly_name", app_name)
     say(text=f"On it! Starting work on *{friendly_name}*", thread_ts=thread_ts)
 
@@ -60,6 +72,7 @@ def handle_mention(event, say):
             repos=repos,
             slack_channel=channel,
             slack_thread_ts=thread_ts,
+            thread_history=thread_history,
         )
     except Exception:
         logger.exception("Failed to fire coding routine")

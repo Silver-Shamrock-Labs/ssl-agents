@@ -6,22 +6,37 @@ _API_BASE = "https://api.anthropic.com/v1/claude_code/routines"
 _BETA_HEADER = "experimental-cc-routine-2026-04-01"
 
 
+def _format_thread_history(messages: list[dict]) -> str:
+    lines = []
+    for m in messages:
+        sender = "bot" if "bot_id" in m else m.get("user", "user")
+        lines.append(f"  [{sender}]: {m.get('text', '')}")
+    return "\n".join(lines)
+
+
 def fire_coding_routine(
     feature_request: str,
     app_name: str,
     repos: list[dict],
     slack_channel: str,
     slack_thread_ts: str,
+    thread_history: list[dict] | None = None,
 ) -> tuple[str, str]:
     repo_lines = "\n".join(
         f"  - {r['name']} (role: {r['role']}, deploy_order: {r['deploy_order']})"
         for r in repos
+    )
+    thread_section = (
+        f"\nThread history:\n{_format_thread_history(thread_history)}\n"
+        if thread_history
+        else ""
     )
     text = (
         f"Feature request: {feature_request}\n\n"
         f"App: {app_name}\n"
         f"Slack channel: {slack_channel}\n"
         f"Slack thread: {slack_thread_ts}\n"
+        f"{thread_section}"
         f"Repos:\n{repo_lines}"
     )
     resp = requests.post(
